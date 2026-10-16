@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Escudo Digital - Investigación Integral</title>
+
+  <!-- Essential CDN Libraries -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: 'hsl(210, 75%, 95%)',
+              100: 'hsl(210, 75%, 85%)',
+              200: 'hsl(210, 75%, 75%)',
+              300: 'hsl(210, 75%, 65%)',
+              400: 'hsl(210, 75%, 55%)',
+              500: 'hsl(210, 75%, 40%)',
+              600: 'hsl(210, 75%, 35%)',
+              700: 'hsl(210, 75%, 25%)',
+              800: 'hsl(210, 75%, 15%)',
+              900: 'hsl(210, 75%, 10%)'
+            },
+            accent: {
+              50: 'hsl(240, 65%, 95%)',
+              100: 'hsl(240, 65%, 85%)',
+              200: 'hsl(240, 65%, 75%)',
+              300: 'hsl(240, 65%, 65%)',
+              400: 'hsl(240, 65%, 60%)',
+              500: 'hsl(240, 65%, 55%)',
+              600: 'hsl(240, 65%, 50%)',
+              700: 'hsl(240, 65%, 40%)',
+              800: 'hsl(240, 65%, 30%)',
+              900: 'hsl(240, 65%, 20%)'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+
+  <!-- Preline UI Components -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.js"></script>
+
+  <!-- Micro-interactions & Custom Styles -->
+  <style>
+    html { scroll-behavior: smooth; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      html { scroll-behavior: auto; }
+    }
+
+    .btn-interactive {
+      transition: all 0.2s ease-out;
+    }
+    
+    .btn-interactive:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .btn-interactive:active {
+      transform: scale(0.95);
+    }
+
+    .card-interactive {
+      transition: all 0.3s ease-out;
+      border: 1px solid transparent;
+      --border-lightness: 40%;
+    }
+
+    .dark .card-interactive {
+      --border-lightness: 60%;
+    }
+
+    .card-interactive:hover {
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      filter: brightness(0.98);
+    }
+    
+    /* Primary colored cards */
+    .card-interactive[class*="primary"]:hover,
+    .card-interactive[class*="white"]:hover,
+    .card-interactive[class*="gray-"]:hover {
+      border-color: hsl(210, 75%, var(--border-lightness));
+    }
+    
+    /* Accent colored cards */
+    .card-interactive[class*="accent"]:hover {
+      border-color: hsl(240, 65%, var(--border-lightness));
+    }
+  </style>
+
+  <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+      const isDark = document.body.classList.contains('dark');
+      document.getElementById('sunIcon').style.display = isDark ? 'block' : 'none';
+      document.getElementById('moonIcon').style.display = isDark ? 'none' : 'block';
+    }
+  </script>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+  <!-- Citation System Script -->
+  <script>
+    function initCitationSystem() {
+      let i = 1, map = new Map();
+      document.querySelectorAll('[data-ref]').forEach(el => {
+        if (el.dataset.citationProcessed) return;
+        const raw = (el.getAttribute('data-ref')||'').trim();
+        if (!raw) return;
+
+        const parts = raw.split('|');
+        const url = parts[0].trim();
+        const idx = (parts[1]||'').trim() || map.get(raw) || (map.set(raw, String(i)), String(i++));
+
+        if (!el.textContent || !el.textContent.trim()) { el.dataset.citationProcessed = 'true'; return; }
+
+        const btn = document.createElement('sup'); btn.textContent = String(idx);
+        Object.assign(btn.style, { fontSize:'8px', color:'#fff', cursor:'pointer', top: '1px', fontWeight:'bold', backgroundColor:'#0284c7', borderRadius:'50%', transition:'all .15s', userSelect:'none', minWidth:'19px', height:'19px', marginLeft:'6px', display:'inline-flex', alignItems:'center', justifyContent:'center', boxShadow:'0 1px 3px rgba(0,0,0,.2)', lineHeight:'1'});
+        btn.addEventListener('mouseenter', ()=> Object.assign(btn.style, { backgroundColor:'#0369a1', transform:'scale(1.12)' }));
+        btn.addEventListener('mouseleave', ()=> Object.assign(btn.style, { backgroundColor:'#0284c7', transform:'scale(1)' }));
+        btn.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); window.open(url, '_blank'); });
+
+        el.appendChild(btn); el.dataset.citationProcessed = 'true';
+      });
+    }
+  </script>
+
+  <!-- Progress bar -->
+  <div class="fixed top-0 left-0 h-1 bg-primary-500 dark:bg-primary-400 z-[60] transition-all duration-300 ease-out" id="progressBar"></div>
+
+  <!-- Floating Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 backdrop-blur bg-gray-50/90 dark:bg-gray-900/90 border-b border-primary-500/20 dark:border-primary-600/20">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-primary-700 dark:text-primary-300">Escudo Digital</h1>
+        
+        <nav class="hidden md:flex items-center space-x-6">
+          <a href="#home" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Inicio</a>
+          <a href="#tecnologia" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Tecnología</a>
+          <a href="#rendimiento" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Rendimiento</a>
+          <a href="#normativa" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Normativa</a>
+          <a href="#costos" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Costos</a>
+          <a href="#impacto" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Impacto</a>
+          <a href="#implementacion" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Implementación</a>
+          <a href="#conclusion" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Conclusión</a>
+        </nav>
+
+        <button onclick="toggleDarkMode()" class="btn-interactive p-2 rounded-lg bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-700 transition-all">
+          <i data-lucide="sun" id="sunIcon" class="w-5 h-5" style="display:none;"></i>
+          <i data-lucide="moon" id="moonIcon" class="w-5 h-5" style="display:block;"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="min-h-screen">
+    <!-- Hero Section -->
+    <section id="home" class="py-40 bg-primary-50/50 dark:bg-gray-900" data-aos="fade-up">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="text-center mb-12">
+          <h2 class="text-5xl font-bold mb-6 text-primary-700 dark:text-primary-300">
+            Sistema de Escudo Digital Municipal
+          </h2>
+          <p class="text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+            Investigación integral sobre sistemas de seguridad inteligente con enfoque en tecnología de punta, viabilidad operativa, cumplimiento normativo y retorno social
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 items-center mt-16">
+          <div class="space-y-6">
+            <p class="text-gray-700 dark:text-gray-300" data-ref="https://penniur.upenn.edu/publications/surveillance-or-safety-how-cities-are-rewriting-tourism|18">
+              La seguridad pública basada en inteligencia artificial representa un paradigma emergente en gestión urbana. La infraestructura tecnológica clave incluye cámaras domo, sistemas pan-tilt-zoom (PTZ), cámaras fijas, cámaras térmicas, reconocimiento de placas y sensores acústicos. Estos dispositivos se integran con análisis computacionales en borde para detección de objetos en tiempo real, análisis de comportamiento y reconocimiento facial.
+            </p>
+
+            <p class="text-gray-700 dark:text-gray-300" data-ref="https://noticias.alas-la.org/las-ciudades-inteligentes-en-latinoamerica-realidad-o-promesa/|12">
+              El mercado global de ciudades inteligentes alcanzó más de
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">877 mil millones</span>
+              de dólares en 2024 y se proyecta superar los
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">3.7 billones</span>
+              de dólares para 2030, con una tasa de crecimiento anual cercana al
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">30%</span>.
+            </p>
+          </div>
+          
+          <img
+            src="https://cdn.qwenlm.ai/719032aa-b7b3-4c72-80dd-b59a8bb443d3/c4d64a18-9871-4c49-80b1-a305c9b4ec3d/51cd59c7-d371-4588-a4d5-32433dfcf988.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzE5MDMyYWEtYjdiMy00YzcyLTgwZGQtYjU5YThiYjQ0M2QzIiwicmVzb3VyY2VfaWQiOiJjNGQ2NGExOC05ODcxLTRjNDktODBiMS1hMzA1YzliNGVjM2QiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.AJXu-7GQ2USx0nNW3j-Xnqw3wJzB0vjeGcUElTyWmrs"
+            alt="Ilustración conceptual de una ciudad inteligente moderna durante el día con un ambiente urbano luminoso y limpio. En primer plano se observa un edificio gubernamental blanco con grandes ventanas y una bandera ondeando en el tejado. Alrededor del edificio hay tres cámaras de seguridad de estilo cilíndrico negro montadas en postes metálicos de color gris oscuro. Cada cámara tiene un pequeño LED azul brillante indicando actividad. Detrás del edificio se ven siluetas de edificios modernos con fachadas de vidrio reflejando el sol. En el cielo despejado aparece un icono estilizado de nube conectada con líneas de datos azules (hexadecimal #1a73b3) que representan redes de comunicación. En la esquina inferior derecha hay un texto digital flotante mostrando números clave: 877 mil millones de dólares, 3.7 billones, y 30% de crecimiento anual, todos en tipografía sans-serif blanca sobre fondo azul semitransparente. El fondo general es de color gris claro (hexadecimal #f3f4f6) con elementos geométricos sutiles en tonos azules para sugerir conectividad digital."
+            class="w-full rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300"
+          />
+        </div>
+
+        <div class="mt-12 pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+          <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://penniur.upenn.edu/publications/surveillance-or-safety-how-cities-are-rewriting-tourism|18">
+            <i data-lucide="info" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+            Hallazgo clave: Existe una brecha crítica de implementación global: mientras el 90% de los alcaldes desean integrar IA en la gestión urbana, solo el 2% está activamente desplegando estos sistemas, destacando la necesidad urgente de políticas locales robustas y marcos de gobernanza responsables.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tecnología Section -->
+    <section id="tecnologia" class="py-20 bg-white/80 dark:bg-gray-900" data-aos="fade-up">
+      <div class="max-w-6xl mx-auto px-6">
+        <h2 class="text-3xl font-bold mb-8 text-primary-700 dark:text-primary-300 text-center">
+          Arquitectura Tecnológica de Puntera
+        </h2>
+        <p class="text-center text-gray-700 dark:text-gray-300 mb-12 text-lg">
+          Plataformas integradas y motores de IA avanzados para seguridad inteligente
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+          <div class="card-interactive p-6 bg-primary-50/50 dark:bg-gray-800 rounded-xl shadow-md">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                <i data-lucide="cpu" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-primary-700 dark:text-primary-300" data-ref="https://arxiv.org/html/2608.08887v1|22">City Sentinel</h3>
+            </div>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              Marco de vigilancia inteligente de código abierto basado en IA que integra seis módulos de aprendizaje profundo: reconocimiento facial, lectura automática de placas, detección de fuego y humo, detección de armas y cuchillos, detección de violencia y detección de accidentes de tráfico.
+            </p>
+          </div>
+
+          <div class="card-interactive p-6 bg-accent-50/50 dark:bg-gray-800 rounded-xl shadow-md">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="flex-shrink-0 w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                <i data-lucide="shield-check" class="w-6 h-6 text-accent-600 dark:text-accent-400"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-accent-700 dark:text-accent-300" data-ref="https://latam.issivs.com/es/ciudades-inteligentes/|10">SecurOS®</h3>
+            </div>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              Plataforma de ciudades inteligentes diseñada como infraestructura de seguridad urbana unificada. Funciona como sistema de gestión de video (VMS) e integra cámaras, sensores, herramientas analíticas y sistemas de terceros en un entorno operativo único.
+            </p>
+          </div>
+
+          <div class="card-interactive p-6 bg-primary-50/50 dark:bg-gray-800 rounded-xl shadow-md">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                <i data-lucide="globe" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-primary-700 dark:text-primary-300" data-ref="https://noticias.alas-la.org/las-ciudades-inteligentes-en-latinoamerica-realidad-o-promesa/|12">Genetec Inc.</h3>
+            </div>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              Empresa global de tecnología que ofrece plataformas unificadas de seguridad física. Sus productos insignia, Genetec Security Center y Genetec Security Center SaaS, integran funciones como control de acceso, vigilancia por video, reconocimiento automático de placas, detección de intrusos, comunicaciones y análisis en un solo sistema operativo.
+            </p>
+          </div>
+        </div>
+
+        <div class="hs-accordion-group space-y-4">
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-yolo-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="zap" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-primary-700 dark:text-primary-300">Modelos YOLO para Detección de Objetos</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-primary-600 dark:text-primary-400"></i>
+            </button>
+            <div id="hs-yolo-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-yolo-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://arxiv.org/html/2605.24831v1|32">
+                  YOLOv8, lanzado en 2023, es un modelo sin anclas con una cabeza desacoplada que separa clasificación y regresión. Sus innovaciones clave incluyen la espina dorsal C2f para mejor flujo de gradiente y una red neuronal PANet para fusión de características multi-escala. Utiliza supresión no máxima (NMS) para post-procesamiento y pérdida focal de distribución (DFL) para modelar coordenadas de caja delimitadora como distribuciones discretas.
+                </p>
+                
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://arxiv.org/html/2605.24831v1|32">
+                  YOLO26, introducido por Ultralytics a principios de 2026, representa un cambio arquitectónico significativo hacia inferencia de extremo a extremo. Las características clave incluyen: arquitectura sin NMS que aplica asignación de etiquetas uno-a-uno durante el entrenamiento, eliminando la latencia de post-procesamiento; cabeza sin DFL que utiliza regresión directa de coordenadas; asignación de etiquetas consciente de pequeños objetivos (STAL) con umbral dinámico de IoU; balanceo de pérdida progresivo (ProgLoss); y optimizador MuSGD.
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://arxiv.org/html/2605.24831v1|32">
+                    <i data-lucide="circle-check" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Desempeño destacado: En el conjunto de datos Pascal VOC, YOLO26-x logró el mAP@50:95 más alto en 0.635, superando a YOLOv8 en 0.604, demostrando superior precisión, recall y puntuación F1.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-recognition-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="scan-face" class="w-6 h-6 text-accent-600 dark:text-accent-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-accent-700 dark:text-accent-300">Reconocimiento Facial y Lectura de Placas</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-accent-600 dark:text-accent-400"></i>
+            </button>
+            <div id="hs-recognition-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-recognition-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://arxiv.org/html/2608.08887v1|22">
+                  Los modelos de visión utilizados son YOLOv8 para detección de objetos (fuego, cuchillos, armas) e InsightFace (detector RetinaFace + espalda ArcFace) para reconocimiento facial. La lectura automática de placas (ANPR) utiliza una tubería de dos etapas de un detector de placas YOLOv8 seguido de EasyOCR para reconocimiento de caracteres.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://arxiv.org/html/2608.08887v1|22">
+                  En una estación de trabajo con GPU NVIDIA RTX 3060, City Sentinel logró una latencia mediana de reconocimiento de extremo a extremo de
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">743 ms</span>.
+                  El ciclo completo desde la ingesta del flujo RTSP hasta la salida final se redujo a
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">104 ms</span>
+                  en GPU versus
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">1,690 ms</span>
+                  en ejecución solo con CPU.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://arxiv.org/html/2608.08887v1|22">
+                  Las métricas de rendimiento en un conjunto de prueba mostraron las siguientes precisiones: tasa de coincidencia de reconocimiento facial del
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">91.2%</span>,
+                  precisión de lectura de placas ANPR del
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">85.7%</span>,
+                  mAP@0.5 de detección de fuego de 0.873, mAP@0.5 de detección de cuchillos de 0.889, mAP@0.5 de detección de armas de 0.846, precisión/recall de detección de accidentes de 0.791/0.768.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-anpr-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="car" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-primary-700 dark:text-primary-300">Lectura de Placas Basada en IA</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-primary-600 dark:text-primary-400"></i>
+            </button>
+            <div id="hs-anpr-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-anpr-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.sciopen.com/article/10.32604/cmc.2026.084246|29">
+                  Una tubería ANPR orientada a borde fue desarrollada para una plataforma de estacionamiento inteligente basada en IoT, combinando YOLOv8 para detección de placas, PaddleOCR para reconocimiento de texto y una etapa de normalización basada en reglas para reducir errores de OCR.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.sciopen.com/article/10.32604/cmc.2026.084246|29">
+                  En un estudio de ablación en imágenes de placas recortadas, PaddleOCR logró hasta un
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">96.0%</span>
+                  de precisión de coincidencia exacta y
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">98.78%</span>
+                  de precisión a nivel de caracteres, con un tiempo promedio de procesamiento de
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">52.55 ms</span>
+                  por imagen.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.milesight.com/security/blog/ai-lpr|30">
+                  Los sistemas tradicionales de OCR para ANPR tienen limitaciones: precisión inferior debido a desenfoque por movimiento o calidad de imagen deficiente; requisitos estrictos de iluminación y instalación; dificultad con placas no estándar; alta tasa de lecturas falsas o mal leídas; y falta de inteligencia para análisis de atributos vehiculares.
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-amber-500 bg-amber-50/40 dark:bg-amber-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-amber-900 dark:text-amber-100 leading-relaxed" data-ref="https://www.sciopen.com/article/10.32604/cmc.2026.084246|29">
+                    <i data-lucide="alert-triangle" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Limitación: Cuando se implementó como tubería completa de extremo a extremo en Raspberry Pi usando ONNX Runtime, el sistema logró solo un 83.5% de precisión de coincidencia exacta con una latencia de 1713 ms por imagen, mostrando compromisos en hardware de bajo costo.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Rendimiento Section -->
+    <section id="rendimiento" class="py-20 bg-primary-50/50 dark:bg-gray-800" data-aos="fade-up">
+      <div class="max-w-6xl mx-auto px-6">
+        <h2 class="text-3xl font-bold mb-8 text-primary-700 dark:text-primary-300 text-center">
+          Métricas de Rendimiento y Latencia
+        </h2>
+        <p class="text-center text-gray-700 dark:text-gray-300 mb-12 text-lg">
+          Evaluación técnica de tiempos de respuesta, precisión y escalabilidad
+        </p>
+
+        <div class="grid md:grid-cols-2 gap-8 items-start mb-12">
+          <div class="space-y-6">
+            <h3 class="text-xl font-semibold text-primary-700 dark:text-primary-300" data-ref="https://www.facebook.com/groups/ComputerVisionGroup/posts/3311682235642621/|24">
+              Protocolos de Transmisión en Tiempo Real
+            </h3>
+            
+            <p class="text-gray-700 dark:text-gray-300">
+              Por otro lado, RTSP proporciona buenos fotogramas por segundo (fps), pero tiene
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">1-2 segundos</span>
+              de latencia. No se conocen otros protocolos de transmisión.
+            </p>
+
+            <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.datapath.co.uk/what-latency-should-i-expect-from-an-ip-based-cctv-control-room/|37">
+              La latencia típica de circuitos cerrados de televisión basados en IP en salas de control cae entre
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">100 y 200 milisegundos</span>
+              de cristal a cristal para flujos de cámaras comprimidas estándar.
+            </p>
+
+            <div class="pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+              <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://www.researchgate.net/publication/399909840_A_Modular_and_Secure_Face_Recognition_Pipeline_with_Real-Time_WebRTC_Streaming|28">
+                <i data-lucide="trending-up" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                Avance tecnológico: Al reemplazar protocolos de video basados en TCP tradicionales (por ejemplo, RTSP) con transporte UDP/RTP de WebRTC, se logra latencia de extremo a extremo sub-500 ms, representando una mejora significativa en tiempos de respuesta.
+              </p>
+            </div>
+          </div>
+
+          <div class="card-interactive p-6 rounded-xl shadow-md bg-white/90 backdrop-blur-sm dark:bg-gray-900 h-80">
+            <canvas id="latencyChart"></canvas>
+          </div>
+        </div>
+
+        <div class="hs-accordion-group space-y-4">
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-hardware-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="server" class="w-6 h-6 text-accent-600 dark:text-accent-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-accent-700 dark:text-accent-300">Requisitos de Hardware y Procesamiento</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-accent-600 dark:text-accent-400"></i>
+            </button>
+            <div id="hs-hardware-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-hardware-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://ninjalabo.ai/blogs/yolofaceid.html|25">
+                  Para un sistema municipal con
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">200 cámaras</span>
+                  a
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">30 FPS</span>
+                  cada una, el poder de procesamiento total requerido es de
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">6,000 FPS</span>.
+                  Basándose en capacidades de GPU:
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-4 mt-4">
+                  <div class="p-4 bg-accent-50/50 dark:bg-accent-900/20 rounded-lg">
+                    <h4 class="font-semibold text-accent-700 dark:text-accent-300 mb-2">NVIDIA RTX 3090</h4>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                      Puede manejar aproximadamente
+                      <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">120-150 FPS</span>
+                      para YOLOv8 estándar
+                    </p>
+                  </div>
+                  
+                  <div class="p-4 bg-accent-50/50 dark:bg-accent-900/20 rounded-lg">
+                    <h4 class="font-semibold text-accent-700 dark:text-accent-300 mb-2">NVIDIA RTX 4090</h4>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                      Puede manejar aproximadamente
+                      <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">200-250 FPS</span>
+                      para YOLOv8 estándar
+                    </p>
+                  </div>
+                </div>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://ninjalabo.ai/blogs/yolofaceid.html|25">
+                  Para cumplir el requisito de 6,000 FPS con GPUs RTX 4090: usando un servidor ASUS ESC8000A-E11 (admite hasta 8 GPUs),
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">3-4 servidores</span>
+                  son necesarios. Usando un servidor Supermicro 4U (admite hasta 4 GPUs),
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">6-8 servidores</span>
+                  son necesarios.
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-amber-500 bg-amber-50/40 dark:bg-amber-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-amber-900 dark:text-amber-100 leading-relaxed" data-ref="https://ninjalabo.ai/blogs/yolofaceid.html|25">
+                    <i data-lucide="info" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Consideración de almacenamiento: Los requisitos de almacenamiento para grabación continua de 200 cámaras durante 30 días son sustanciales. Asumiendo compresión H.264 y 30 FPS: para cámaras 2MP (1080p), el almacenamiento total requerido es aproximadamente 185.2 TB por mes; para cámaras 4MP, es aproximadamente 370.5 TB por mes.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-optimizacion-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="settings" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-primary-700 dark:text-primary-300">Optimización de Latencia</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-primary-600 dark:text-primary-400"></i>
+            </button>
+            <div id="hs-optimizacion-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-optimizacion-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://learn.microsoft.com/en-us/answers/questions/1833811/how-to-use-azure-face-api-on-rtsp-streaming|23">
+                  Los factores principales que afectan la latencia en el reconocimiento facial de la API Azure Face API durante transmisión RTSP son la velocidad de red, complejidad de fotograma y poder de procesamiento.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://learn.microsoft.com/en-us/answers/questions/1833811/how-to-use-azure-face-api-on-rtsp-streaming|23">
+                  Se implementó una solución basada en Python usando procesamiento asíncrono (asyncio) y OpenCV para reducir la latencia. Las técnicas clave incluyeron redimensionar fotogramas de video a
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">640x480 píxeles</span>
+                  y enviarlos como bytes codificados en JPEG al punto final de la API Azure Face.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://learn.microsoft.com/en-us/answers/questions/1833811/how-to-use-azure-face-api-on-rtsp-streaming|23">
+                  Las estrategias de optimización para reducir la latencia incluyen: limitar la frecuencia de fotogramas del flujo RTSP; redimensionar fotogramas a un tamaño más pequeño antes de enviarlos a la API; usar solicitudes asíncronas para procesar múltiples fotogramas en paralelo; ejecutar detección facial inicial localmente y usar la API en la nube para análisis detallado.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://learn.microsoft.com/en-us/answers/questions/1833811/how-to-use-azure-face-api-on-rtsp-streaming|23">
+                  Las estrategias avanzadas de optimización involucran implementar soluciones de computación en borde para preprocesar y filtrar fotogramas antes de enviarlos a la nube, agrupar fotogramas para reducir llamadas a la API, y procesar múltiples flujos RTSP en paralelo usando hilos múltiples o multiprocesamiento basado en capacidades de hardware.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Normativa Section -->
+    <section id="normativa" class="py-20 bg-white/80 dark:bg-gray-900" data-aos="fade-up">
+      <div class="max-w-6xl mx-auto px-6">
+        <h2 class="text-3xl font-bold mb-8 text-primary-700 dark:text-primary-300 text-center">
+          Marco Normativo y Protección de Datos
+        </h2>
+        <p class="text-center text-gray-700 dark:text-gray-300 mb-12 text-lg">
+          Cumplimiento legal con Ley 1581 de 2012 y jurisprudencia constitucional colombiana
+        </p>
+
+        <div class="grid md:grid-cols-2 gap-8 items-center mb-12">
+          <img
+            src="https://cdn.qwenlm.ai/719032aa-b7b3-4c72-80dd-b59a8bb443d3/c4d64a18-9871-4c49-80b1-a305c9b4ec3d/2f1247e3-1243-44b1-befe-71ba1b0bc660.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzE5MDMyYWEtYjdiMy00YzcyLTgwZGQtYjU5YThiYjQ0M2QzIiwicmVzb3VyY2VfaWQiOiJjNGQ2NGExOC05ODcxLTRjNDktODBiMS1hMzA1YzliNGVjM2QiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.AJXu-7GQ2USx0nNW3j-Xnqw3wJzB0vjeGcUElTyWmrs"
+            alt="Ilustración conceptual de un escudo digital moderno en primer plano sobre un fondo institucional oficial. El escudo principal es una forma hexagonal estilizada en color azul primario (hexadecimal #1a73b3) con bordes definidos. Dentro del escudo hay tres iconos dispuestos verticalmente: en la parte superior un candado cerrado en color dorado (hexadecimal #d4af37) representando seguridad de datos; en el centro un rostro humano simplificado en color gris medio (hexadecimal #6b7280) representando reconocimiento facial; y en la parte inferior una hoja de papel con texto en color gris oscuro representando documentos legales. Alrededor del escudo hay cuatro elementos flotantes: en la esquina superior izquierda un documento legal abierto mostrando el texto 'Ley 1581 de 2012' en tipografía sans-serif negra; en la esquina superior derecha una balanza de justicia en color gris plateado (hexadecimal #9ca3af); en la esquina inferior izquierda una bandera colombiana rectangular con colores amarillo, azul y rojo; y en la esquina inferior derecha una silueta de juez con toga negra. El fondo es un gradiente suave de gris claro (hexadecimal #f3f4f6) a blanco (hexadecimal #ffffff) con líneas de conexión sutiles en azul claro (hexadecimal #93c5fd) entre los elementos para sugerir interconexión legal. La composición general transmite autoridad, seguridad, protección de datos y cumplimiento normativo."
+            class="w-full rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300"
+          />
+
+          <div class="space-y-6">
+            <h3 class="text-xl font-semibold text-primary-700 dark:text-primary-300" data-ref="https://secureprivacy.ai/blog/colombia-data-protection-law|40">
+              Ley 1581 de 2012 - Derecho de Habeas Data
+            </h3>
+            
+            <p class="text-gray-700 dark:text-gray-300">
+              La ley de protección de datos de Colombia es la Ley 1581 de 2012, que codifica el derecho de "Habeas Data". Este derecho está consagrado como derecho constitucional fundamental bajo el Artículo 15 de la Constitución Política de 1991, otorgando a los individuos el derecho de conocer, actualizar y rectificar información sobre ellos mantenida en bases de datos por entidades públicas o privadas.
+            </p>
+
+            <p class="text-gray-700 dark:text-gray-300" data-ref="https://secureprivacy.ai/blog/colombia-data-protection-law|40">
+              La Superintendencia de Industria y Comercio (SIC) es la Autoridad Nacional de Protección de Datos con amplios poderes de investigación y sanción. Aplica activamente el cumplimiento a través de inspecciones in situ y puede imponer penalidades sustanciales. Su enfoque actual incluye sectores de alto riesgo y tecnologías emergentes como IA, evidenciado por circulares especializadas como la Circular 002 de 2024 para sistemas de IA y la Circular 001 de 2025 para operaciones de Fintech.
+            </p>
+          </div>
+        </div>
+
+        <div class="hs-accordion-group space-y-4">
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-clasificacion-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="layers" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-primary-700 dark:text-primary-300">Clasificación de Datos Personales</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-primary-600 dark:text-primary-400"></i>
+            </button>
+            <div id="hs-clasificacion-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-clasificacion-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://secureprivacy.ai/blog/colombia-data-protection-law|40">
+                  Los datos personales en Colombia se clasifican en cuatro categorías basadas en nivel de riesgo:
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div class="p-4 bg-primary-50/50 dark:bg-primary-900/20 rounded-lg">
+                    <h4 class="font-semibold text-primary-700 dark:text-primary-300 mb-2">Datos Públicos</h4>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                      Por ejemplo, resoluciones judiciales, no requieren autorización previa pero deben seguir principios de Habeas Data
+                    </p>
+                  </div>
+
+                  <div class="p-4 bg-primary-50/50 dark:bg-primary-900/20 rounded-lg">
+                    <h4 class="font-semibold text-primary-700 dark:text-primary-300 mb-2">Datos Semi-Privados</h4>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                      Por ejemplo, financieros, crédito, regulados por la Ley 1266 de 2008
+                    </p>
+                  </div>
+
+                  <div class="p-4 bg-primary-50/50 dark:bg-primary-900/20 rounded-lg">
+                    <h4 class="font-semibold text-primary-700 dark:text-primary-300 mb-2">Datos Privados</h4>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                      Por ejemplo, dirección residencial, requieren consentimiento previo, expreso e informado
+                    </p>
+                  </div>
+
+                  <div class="p-4 bg-primary-50/50 dark:bg-primary-900/20 rounded-lg">
+                    <h4 class="font-semibold text-primary-700 dark:text-primary-300 mb-2">Datos Sensibles</h4>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                      Biometría, salud, creencias religiosas, procesamiento generalmente prohibido excepto para excepciones específicas
+                    </p>
+                  </div>
+                </div>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://secureprivacy.ai/blog/colombia-data-protection-law|40">
+                    <i data-lucide="circle-alert" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Protección extraordinaria: Los datos biométricos están sujetos a protección "extraordinaria" bajo la Ley 1581. Una acción de aplicación de 2025 involucró una multa de $214 millones contra una empresa de comercio electrónico por hacer obligatorio el reconocimiento facial para acceso a cuenta, demostrando la posición estricta de la SIC sobre proporcionalidad y necesidad en el procesamiento biométrico.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-registro-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="database" class="w-6 h-6 text-accent-600 dark:text-accent-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-accent-700 dark:text-accent-300">Registro Nacional de Bases de Datos (RNBD)</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-accent-600 dark:text-accent-400"></i>
+            </button>
+            <div id="hs-registro-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-registro-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://lexlatin.com/opinion/registro-nacional-bases-datos-colombia-herramienta|3">
+                  El Registro Nacional de Bases de Datos (RNBD) es un directorio público administrado por la Superintendencia de Industria y Comercio (SIC) en Colombia. Su propósito es informar al público sobre cómo se procesan sus datos personales, garantizando transparencia y control sobre el tratamiento de datos.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.hklaw.com/es/insights/publications/2025/01/obligaciones-del-registro-nacional-de-bases-de-datos-personales|2">
+                  Bajo la Circular Externa 003 del 1 de agosto de 2018, las entidades en Colombia están obligadas a registrar y mantener sus bases de datos personales en el RNBD si cumplen uno de dos criterios: 1) Son organizaciones sin fines de lucro con activos totales que exceden
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">100,000 Unidades de Valor Tributario (UVT)</span>,
+                  aproximadamente COP$5 mil millones (~US$1.1 millones) para 2025. 2) Son personas jurídicas de naturaleza pública.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.hklaw.com/es/insights/publications/2025/01/obligaciones-del-registro-nacional-de-bases-de-datos-personales|2">
+                  Para el año 2025, las entidades obligadas a reportar deben actualizar su información en el RNBD entre el 2 y el 31 de marzo de 2025. Además, deben reportar reclamos de sujetos de datos del segundo semestre de 2024 a más tardar el 21 de febrero de 2025, o notificar la ausencia de nuevos reclamos.
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-amber-500 bg-amber-50/40 dark:bg-amber-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-amber-900 dark:text-amber-100 leading-relaxed" data-ref="https://www.hklaw.com/es/insights/publications/2025/01/obligaciones-del-registro-nacional-de-bases-de-datos-personales|2">
+                    <i data-lucide="circle-alert" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Penalidades: El incumplimiento de estas obligaciones de registro y reporte puede resultar en sanciones administrativas de la Superintendencia de Industria y Comercio (SIC), incluyendo multas significativas y órdenes de cumplimiento.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-principios-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="scale" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-primary-700 dark:text-primary-300">Principios de Tratamiento de Datos</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-primary-600 dark:text-primary-400"></i>
+            </button>
+            <div id="hs-principios-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-principios-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://resguard-solutions.com/blog/en/colombia-law-1581-data-protection-guide/|42">
+                  La ley establece ocho principios fundamentales de procesamiento de datos: 1. Legalidad: Todo procesamiento debe cumplir con la ley aplicable. 2. Finalidad: Los datos deben recolectarse para propósitos específicos, explícitos y legítimos. 3. Libertad: El procesamiento requiere consentimiento previo, expreso e informado del sujeto de datos. 4. Veracidad: La información recolectada debe ser verdadera, completa, precisa, actualizada, verificable y comprensible. 5. Transparencia: Los sujetos de datos tienen derecho de saber sobre la existencia de sus datos en cualquier momento.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://resguard-solutions.com/blog/en/colombia-law-1581-data-protection-guide/|42">
+                  Los principios adicionales incluyen: 6. Acceso Restringido: Los datos personales solo pueden ser accedidos por personas autorizadas. 7. Seguridad: Deben implementarse medidas técnicas, humanas y administrativas apropiadas para garantizar la seguridad de los datos. 8. Confidencialidad: Todas las personas involucradas en el procesamiento de datos están obligadas por un deber indefinido de confidencialidad.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://normograma.com/keralty/compilacion/docs/concepto_superindustria_0281341_2023.htm|4">
+                  Según el Artículo 4, literal c) de la Ley 1581 de 2012, el principio de libertad dicta que el tratamiento de datos personales solo puede ejercerse con el consentimiento previo, expreso e informado del sujeto de datos. El uso de cámaras constituye un procesamiento de datos, lo cual requiere esta autorización.
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://mslegal.com.co/datos-biometricos-e-inteligencia-artificial/|5">
+                    <i data-lucide="info" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Consentimiento reforzado: El Tribunal Constitucional Colombiano ha establecido que el tratamiento de datos sensibles requiere una "autorización reforzada". Esto significa que los individuos deben ser informados específicamente sobre los datos biométricos recolectados, su propósito exacto y riesgos asociados, y deben proveer su consentimiento libremente, explícitamente y con conocimiento pleno.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-jurisprudencia-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="landmark" class="w-6 h-6 text-accent-600 dark:text-accent-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-accent-700 dark:text-accent-300">Jurisprudencia Constitucional</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-accent-600 dark:text-accent-400"></i>
+            </button>
+            <div id="hs-jurisprudencia-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-jurisprudencia-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?i=182915|1">
+                  La Corte Constitucional declaró la inexequibilidad de la expresión "prevención" en el Artículo 48 de la Ley 2197 de 2022. La Sala Plena consideró que el acceso a circuitos cerrados de vigilancia y seguridad privada para acciones de "prevención" es desproporcionado porque su carácter vago e indeterminado no permite contar con criterios claros, precisos y objetivos indispensables para que dichas acciones puedan considerarse legítimas en un Estado que se rige por las libertades y derechos de la ciudadanía.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?i=182915|1">
+                  La jurisprudencia constitucional ha establecido que el derecho fundamental a la intimidad puede entrar en conflicto con otros derechos fundamentales como el de seguridad, pero cualquier restricción debe ser justificada mediante el juicio de proporcionalidad. Este análisis evalúa si el fin perseguido (la seguridad) es válido, si la medida es necesaria y efectivamente conducente, y si los beneficios exceden las restricciones impuestas sobre los derechos fundamentales.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?i=182915|1">
+                  La Corte Constitucional reconoció la existencia de diferentes tipos de información según el lugar donde se capta, lo que determina el nivel de protección de los derechos fundamentales. La tipología incluye: pública (espacios abiertos al público), semiprivada (establecimientos privados abiertos al público), privada (espacios privados), y reservada (datos sensibles como genética, preferencias sexuales, credo ideológico). El acceso a esta última categoría está especialmente restringido.
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-amber-500 bg-amber-50/40 dark:bg-amber-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-amber-900 dark:text-amber-100 leading-relaxed" data-ref="https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?i=182915|1">
+                    <i data-lucide="circle-alert" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Riesgos significativos: La Corte Constitucional señaló que no existe una relación directa y comprobada entre el aumento de la vigilancia y la disminución de la criminalidad. Se citaron investigaciones que encontraron poca correlación, utilizando como ejemplo la ciudad de Taiyuan, China, que tenía un alto índice de cámaras CCTV (119.57 por cada 1000 habitantes) y un índice de delincuencia del 51.47%.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Costos Section -->
+    <section id="costos" class="py-20 bg-primary-50/50 dark:bg-gray-800" data-aos="fade-up">
+      <div class="max-w-6xl mx-auto px-6">
+        <h2 class="text-3xl font-bold mb-8 text-primary-700 dark:text-primary-300 text-center">
+          Análisis de Costos y Rentabilidad
+        </h2>
+        <p class="text-center text-gray-700 dark:text-gray-300 mb-12 text-lg">
+          Evaluación económica del ciclo de vida y retorno de inversión
+        </p>
+
+        <div class="grid md:grid-cols-2 gap-8 items-start mb-12">
+          <div class="space-y-6">
+            <h3 class="text-xl font-semibold text-primary-700 dark:text-primary-300" data-ref="https://newsroom.axis.com/blog/video-surveillance-value|20">
+              Costo Total de Propiedad (TCO)
+            </h3>
+            
+            <p class="text-gray-700 dark:text-gray-300">
+              Un estudio de Costo Total de Propiedad (TCO) de 2017 para un proyecto de vigilancia por video de
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">1,500 cámaras</span>
+              durante un ciclo de vida de 10 años encontró que el
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">34%</span>
+              del costo total fue en la inversión inicial para hardware y software, mientras que el resto
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">(66%)</span>
+              provino de instalación, mantenimiento y operación.
+            </p>
+
+            <p class="text-gray-700 dark:text-gray-300" data-ref="https://newsroom.axis.com/blog/video-surveillance-value|20">
+              Los modelos de Costo Total de Propiedad (TCO) son útiles para capturar gastos visibles pero son menos efectivos para destacar posibles costos ocultos. Un ejemplo significativo es el tiempo de inactividad del sistema, cuyas consecuencias financieras pueden ser serias y rara vez se incluyen en las cifras de TCO.
+            </p>
+
+            <p class="text-gray-700 dark:text-gray-300" data-ref="https://newsroom.axis.com/blog/video-surveillance-value|20">
+              La calidad del sistema es crítica para evitar altos costos asociados con mal funcionamiento y fallas. Factores que causan esto incluyen incapacidad de resistir condiciones climáticas extremas o urbanas como polvo y vibraciones. La necesidad de reparación o reemplazo regular de cientos o miles de cámaras representa un costo directo significativo.
+            </p>
+
+            <div class="pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+              <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://newsroom.axis.com/blog/video-surveillance-value|20">
+                <i data-lucide="trending-up" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                Valor entregado: El valor entregado por un sistema de vigilancia debe equilibrar su costo total. El valor puede ser directo (por ejemplo, reducción en vandalismo o robo), indirecto (por ejemplo, reducción en costos de mantenimiento) o ambiental (por ejemplo, productos más duraderos).
+              </p>
+            </div>
+          </div>
+
+          <div class="card-interactive p-6 rounded-xl shadow-md bg-white/90 backdrop-blur-sm dark:bg-gray-900 h-80">
+            <canvas id="costChart"></canvas>
+          </div>
+        </div>
+
+        <div class="hs-accordion-group space-y-4">
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-mercado-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="trending-up" class="w-6 h-6 text-accent-600 dark:text-accent-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-accent-700 dark:text-accent-300">Mercado de Vigilancia Urbana</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-accent-600 dark:text-accent-400"></i>
+            </button>
+            <div id="hs-mercado-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-mercado-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.mordorintelligence.com/industry-reports/global-city-surveillance-market|19">
+                  El mercado global de vigilancia urbana se proyecta crecer a una tasa CAGR del
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">8.12%</span>,
+                  alcanzando
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">USD 15.57 mil millones</span>
+                  en 2026 (desde USD 14.40 mil millones en 2025) y se espera que alcance USD 22.99 mil millones para 2031.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.mordorintelligence.com/industry-reports/global-city-surveillance-market|19">
+                  Los principales impulsores de crecimiento para el mercado de vigilancia urbana incluyen aumento en el gasto en infraestructura de seguridad urbana, declive en precios de cámaras IP (erosión de 15-20% por año), análisis de video mejorado y expansión de presupuestos de ciudades inteligentes para sistemas de vigilancia integrados.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.mordorintelligence.com/industry-reports/global-city-surveillance-market|19">
+                  En 2025, la gestión de tráfico fue el segmento de aplicación líder, representando el
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">42.26%</span>
+                  de los ingresos, mientras que los centros de transporte público se proyectan como el segmento de más rápido crecimiento con una tasa CAGR del
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">8.83%</span>
+                  hasta 2031.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.mordorintelligence.com/industry-reports/global-city-surveillance-market|19">
+                  Las autoridades municipales fueron los usuarios finales más grandes en 2025, representando el
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">38.21%</span>
+                  del gasto total en soluciones de vigilancia urbana.
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-amber-500 bg-amber-50/40 dark:bg-amber-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-amber-900 dark:text-amber-100 leading-relaxed" data-ref="https://www.mordorintelligence.com/industry-reports/global-city-surveillance-market|19">
+                    <i data-lucide="alert-triangle" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Restricciones del mercado: Las regulaciones de privacidad más estrictas y la oposición pública son restricciones significativas, impactando la proyección de CAGR del mercado por aproximadamente -1.2%. Esto está impulsado por regulaciones como la Ley de IA de la Unión Europea y mayor aplicación bajo el RGPD.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-sroi-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="dollar-sign" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-primary-700 dark:text-primary-300">Retorno Social de Inversión (SROI)</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-primary-600 dark:text-primary-400"></i>
+            </button>
+            <div id="hs-sroi-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-sroi-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.hyperbots.com/glossary/social-return-on-investment|9">
+                  El Retorno Social de Inversión (SROI) es un enfoque estructurado para evaluar cómo las inversiones se traducen en beneficios medibles al identificar partes interesadas, mapear resultados (sociales, ambientales, económicos), asignar valores financieros a estos resultados y calcular la razón del valor social total creado al costo de inversión.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.hyperbots.com/glossary/social-return-on-investment|9">
+                  La fórmula de SROI es: SROI = Valor Social Total Creado ÷ Inversión Total. Un ejemplo proporcionado es una inversión de
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">$1,000,000</span>
+                  generando
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">$3,500,000</span>
+                  en valor, resultando en un SROI de
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">3.5</span>,
+                  lo que significa que por cada $1 invertido, se crea $3.50 de valor social.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.hyperbots.com/glossary/social-return-on-investment|9">
+                  SROI proporciona perspectivas claras sobre la efectividad de una iniciativa basada en su razón: SROI &gt; 1 indica más valor que costo; SROI = 1 sugiere que el valor iguala la inversión; SROI &lt; 1 indica generación de valor relativo más baja.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.tandfonline.com/doi/full/10.1080/19406940.2025.2583980|8">
+                  Para cada
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">$1 gastado</span>,
+                  un SROI entre
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">$0.38 a $28.94</span>
+                  fue generado en 2022. Los análisis de sensibilidad mostraron robustez de las razones frente a cambios en variables clave.
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://www.hyperbots.com/glossary/social-return-on-investment|9">
+                    <i data-lucide="info" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Aplicaciones prácticas: Las aplicaciones prácticas de SROI incluyen evaluación de programas de desarrollo comunitario, evaluación de iniciativas de sostenibilidad (ESG), medición de proyectos de responsabilidad social corporativa (CSR) y apoyo a decisiones de financiamiento para empresas sociales.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Impacto Section -->
+    <section id="impacto" class="py-20 bg-white/80 dark:bg-gray-900" data-aos="fade-up">
+      <div class="max-w-6xl mx-auto px-6">
+        <h2 class="text-3xl font-bold mb-8 text-primary-700 dark:text-primary-300 text-center">
+          Impacto Socioeconómico y Turismo
+        </h2>
+        <p class="text-center text-gray-700 dark:text-gray-300 mb-12 text-lg">
+          Efectos en seguridad ciudadana, percepción de seguridad y desarrollo económico
+        </p>
+
+        <div class="grid md:grid-cols-2 gap-8 items-center mb-12">
+          <div class="space-y-6">
+            <h3 class="text-xl font-semibold text-primary-700 dark:text-primary-300" data-ref="https://www.iadb.org/es/noticias/seguridad-ciudadana-en-america-latina-y-el-caribe|14">
+              Contexto Regional de Violencia
+            </h3>
+            
+            <p class="text-gray-700 dark:text-gray-300">
+              En América Latina y el Caribe, la tasa de homicidios es tres veces más alta que el promedio global
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">(18 vs. 5.6 por 100,000 habitantes según UNODC)</span>.
+              El crimen cuesta a la región
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">3.5%</span>
+              de su PIB anualmente, impacta costos empresariales y erosiona la confianza pública en instituciones.
+            </p>
+
+            <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.iadb.org/es/noticias/seguridad-ciudadana-en-america-latina-y-el-caribe|14">
+              Un estudio de Chainey et al. encontró que en promedio, el
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">50%</span>
+              de los crímenes en ciudades latinoamericanas ocurren en solo
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">2.5%</span>
+              de los segmentos de calle.
+            </p>
+
+            <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.unav.edu/web/global-affairs/el-coste-economico-de-la-violencia-reducirla-a-la-media-mundial-aumentaria-medio-punto-el-pib-regional|15">
+              El Fondo Monetario Internacional (FMI) estima que si la tasa de homicidios de América Latina se redujera al promedio global, su economía podría crecer adicionalmente
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">medio punto porcentual</span>
+              anualmente. Para países más afectados por violencia, como naciones centroamericanas, este incremento potencial podría ser casi un punto completo.
+            </p>
+
+            <div class="pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+              <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://www.unav.edu/web/global-affairs/el-coste-economico-de-la-violencia-reducirla-a-la-media-mundial-aumentaria-medio-punto-el-pib-regional|15">
+                <i data-lucide="circle-alert" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                Impacto regional: El Banco Interamericano de Desarrollo (BID) determinó que la violencia cuesta a la región de América Latina y el Caribe un gasto equivalente al 3.5% de su Producto Interno Bruto (PIB). Según la Oficina de las Naciones Unidas contra la Droga y el Delito (UNODC), América Latina y el Caribe es la región más violenta del mundo, donde ocurren casi la mitad de todos los homicidios intencionales a pesar de albergar solo el 8% de la población mundial.
+              </p>
+            </div>
+          </div>
+
+          <img
+            src="https://cdn.qwenlm.ai/719032aa-b7b3-4c72-80dd-b59a8bb443d3/c4d64a18-9871-4c49-80b1-a305c9b4ec3d/a7c8ce11-5883-4342-bf80-f15441d64bc0.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzE5MDMyYWEtYjdiMy00YzcyLTgwZGQtYjU5YThiYjQ0M2QzIiwicmVzb3VyY2VfaWQiOiJjNGQ2NGExOC05ODcxLTRjNDktODBiMS1hMzA1YzliNGVjM2QiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.AJXu-7GQ2USx0nNW3j-Xnqw3wJzB0vjeGcUElTyWmrs"
+            alt="Ilustración conceptual de un mapa geográfico de América Latina y el Caribe en vista de globo terráqueo. El continente se muestra en tonos azules claros (hexadecimal #93c5fd) con divisiones políticas sutiles en gris claro (hexadecimal #d1d5db). Sobre la región se observan tres iconos de alerta rojos (hexadecimal #dc2626) con forma de triángulo que representan zonas de alta violencia. Alrededor del mapa aparecen cuatro elementos flotantes: en la esquina superior izquierda un gráfico de barras horizontal mostrando números clave: 18 homicidios por 100,000 habitantes en rojo y 5.6 en verde, ambos en tipografía sans-serif blanca sobre fondo oscuro; en la esquina superior derecha un símbolo de porcentaje grande en color dorado (hexadecimal #d4af37) con el texto '3.5%' debajo; en la esquina inferior izquierda un ícono de moneda (dólar) en color verde (hexadecimal #10b981) con el texto 'PIB anual' en tipografía pequeña; y en la esquina inferior derecha un globo terráqueo con iconos de personas en gris oscuro representando población. En el centro del mapa hay un ícono de escudo digital en color azul primario (hexadecimal #1a73b3) con rayos de luz emanando hacia afuera, simbolizando seguridad tecnológica. El fondo es un gradiente suave de azul muy claro (hexadecimal #dbeafe) a blanco (hexadecimal #ffffff) con líneas de conexión sutiles en azul claro entre los elementos para sugerir interconexión regional."
+            class="w-full rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300"
+          />
+        </div>
+
+        <div class="hs-accordion-group space-y-4">
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-percepcion-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="eye" class="w-6 h-6 text-accent-600 dark:text-accent-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-accent-700 dark:text-accent-300">Percepción de Inseguridad</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-accent-600 dark:text-accent-400"></i>
+            </button>
+            <div id="hs-percepcion-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-percepcion-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.policia.gov.co/sites/default/files/seguridad_c_0.html|16">
+                  La percepción de inseguridad tiene un impacto económico negativo significativo al afectar la competitividad de la ciudad, su potencial turístico y la inversión extranjera. También genera costos directos (por ejemplo, medidas de seguridad) y costos indirectos (por ejemplo, angustia psicológica).
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.policia.gov.co/sites/default/files/seguridad_c_0.html|16">
+                  En Colombia, los costos directos de violencia se calculan como el
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">11.4%</span>
+                  del PIB, lo cual aumenta al
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">24%</span>
+                  cuando se incluyen costos indirectos y transferencias.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.policia.gov.co/sites/default/files/seguridad_c_0.html|16">
+                  Una encuesta de la Cámara de Comercio de Bogotá de 1998-2005 encontró ninguna correlación entre niveles de seguridad reales y percepción de seguridad; en cambio, esta última era consistentemente más alta que el número real de personas afectadas por crímenes.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.policia.gov.co/sites/default/files/seguridad_c_0.html|16">
+                  Los principales factores que influyen en la percepción de inseguridad entre colombianos son condiciones socioeconómicas como desempleo y declive moral, seguidos por la presencia de grupos fuera de la ley como criminales comunes, pandillas, grupos subversivos y unidades de autodefensa.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-turismo-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="plane" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-primary-700 dark:text-primary-300">Impacto en el Turismo</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-primary-600 dark:text-primary-400"></i>
+            </button>
+            <div id="hs-turismo-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-turismo-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.nature.com/articles/s41599-024-03626-w|17">
+                  Un estudio usando datos de panel de
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">297 ciudades chinas</span>
+                  (2000-2021) encontró que designar una ciudad como "ciudad inteligente" aumenta significativamente los ingresos turísticos urbanos en
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">24.3%</span>
+                  y llegadas de turistas en
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">17.2%</span>.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.nature.com/articles/s41599-024-03626-w|17">
+                  El impacto económico positivo de la designación de ciudad inteligente sobre el turismo crece con el tiempo, con el efecto de política volviéndose cada vez más significativo a medida que avanza la construcción. Esto se atribuye a la Paradoja de Solow, donde la escepticidad inicial de los turistas da paso a confianza y promoción boca a boca a medida que madura la infraestructura.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://www.nature.com/articles/s41599-024-03626-w|17">
+                  La construcción de ciudades inteligentes promueve el desarrollo turístico a través de cuatro mecanismos principales: atracción de inversión turística, estimulación de actividades emprendedoras turísticas, mejora de eficiencia operativa y atracción de talento relevante para trabajar en la industria turística.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://penniur.upenn.edu/publications/surveillance-or-safety-how-cities-are-rewriting-tourism|18">
+                  El turismo global contribuye
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">$10.9 billones</span>
+                  a la economía global (aproximadamente 10% del PIB) y es responsable de aproximadamente
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">357 millones</span>
+                  de empleos. En 2024, hubo
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">1.5 mil millones</span>
+                  de llegadas internacionales de turistas, con proyecciones de crecimiento anual del
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">7%</span>
+                  hasta 2034.
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://penniur.upenn.edu/publications/surveillance-or-safety-how-cities-are-rewriting-tourism|18">
+                    <i data-lucide="info" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Factor clave de viaje: Un factor clave que influye en las elecciones de viaje es la seguridad, con el 32% de los viajeros citándola como su principal preocupación en 2025, en aumento desde el 23% en 2021.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-ejemplos-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="building-2" class="w-6 h-6 text-accent-600 dark:text-accent-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-accent-700 dark:text-accent-300">Casos de Éxito en Latinoamérica</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-accent-600 dark:text-accent-400"></i>
+            </button>
+            <div id="hs-ejemplos-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-ejemplos-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://blog.la.nec.com/es/seguridad-publica-y-tecnologia-en-las-ciudades-latinoamericanas|11">
+                  En San Martín, Argentina (población &gt;400k), se implementó un sistema 'Paradas Seguras' para seguridad del transporte público. La solución incluye quioscos inteligentes con botones de pánico, cámaras, sirenas, intercomunicadores y alumbrado automático, todo conectado a una plataforma centralizada de monitoreo llamada CitySensAI por NEC. Esto permite a las autoridades reducir tiempos de respuesta y tomar decisiones basadas en datos.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://blog.la.nec.com/es/seguridad-publica-y-tecnologia-en-las-ciudades-latinoamericanas|11">
+                  La municipalidad de Tigre, Argentina, ha operado un ecosistema tecnológico integrado durante más de una década. Presenta más de
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">2000 cámaras</span>
+                  vinculadas a un Centro de Operaciones de Comando (COT) gestionado por NEC desde 2011. El sistema usa herramientas como reconocimiento de placas, mapas de crimen, IA y detección de comportamiento inusual, operando bajo un modelo de servicio. Resultados incluyen reducción significativa en robos de vehículos y tasas más altas de resolución de casos judiciales.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://blog.la.nec.com/es/seguridad-publica-y-tecnologia-en-las-ciudades-latinoamericanas|11">
+                  Padre Hurtado, Chile, implementó un sistema de vigilancia urbana liderado por NEC. El proyecto incluye más de
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">50 cámaras de 360°</span>,
+                  quioscos con intercomunicadores, vehículos con sistemas de grabación, aplicaciones para ciudadanos, 1,500 botones de pánico, un dron y comunicación en tiempo real entre el centro de comando y oficiales de patrulla. Todos los servicios son gestionados por la plataforma CitySensAI, que usa IA para coordinar policía, ambulancias y bomberos.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://revistaseguridadydefensa.com/index.php/inteligencia-artificial-y-seguridad-ciudadana-aplicaciones-escalabilidad-y-casos-de-exito-en-america-latina/|13">
+                  El Municipio de San Nicolás de los Arroyos, Argentina, implementó un modelo integrado que presenta más de
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">1,200 cámaras</span>
+                  con reconocimiento facial y lectura de placas (LPR). Otros componentes incluyen una aplicación de alerta ciudadana conectada a un centro de monitoreo, análisis automatizado de patrones de comportamiento y tableros dinámicos para gestión de seguridad. Datos oficiales indican que los delitos contra la propiedad disminuyeron un
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">35%</span>
+                  entre 2021 y 2023 como resultado de esta iniciativa.
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://blog.la.nec.com/es/seguridad-publica-y-tecnologia-en-las-ciudades-latinoamericanas|11">
+                    <i data-lucide="circle-check" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Factor común de éxito: Un factor de éxito común identificado en los casos de San Martín, Tigre y Padre Hurtado es el uso de una plataforma unificada y centralizada (CitySensAI por NEC) para consolidar la gestión de varios sistemas de seguridad, previniendo duplicación y mejorando la eficiencia.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Implementación Section -->
+    <section id="implementacion" class="py-20 bg-primary-50/50 dark:bg-gray-800" data-aos="fade-up">
+      <div class="max-w-6xl mx-auto px-6">
+        <h2 class="text-3xl font-bold mb-8 text-primary-700 dark:text-primary-300 text-center">
+          Estrategia de Implementación
+        </h2>
+        <p class="text-center text-gray-700 dark:text-gray-300 mb-12 text-lg">
+          Hoja de ruta estructurada para despliegue exitoso y sostenible
+        </p>
+
+        <div class="grid md:grid-cols-2 gap-8 items-center mb-12">
+          <img
+            src="https://cdn.qwenlm.ai/719032aa-b7b3-4c72-80dd-b59a8bb443d3/c4d64a18-9871-4c49-80b1-a305c9b4ec3d/0fe47620-f452-41f4-a232-285b90659a74.png?key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZXNvdXJjZV91c2VyX2lkIjoiNzE5MDMyYWEtYjdiMy00YzcyLTgwZGQtYjU5YThiYjQ0M2QzIiwicmVzb3VyY2VfaWQiOiJjNGQ2NGExOC05ODcxLTRjNDktODBiMS1hMzA1YzliNGVjM2QiLCJyZXNvdXJjZV9jaGF0X2lkIjpudWxsfQ.AJXu-7GQ2USx0nNW3j-Xnqw3wJzB0vjeGcUElTyWmrs"
+            alt="Ilustración conceptual de una hoja de ruta de implementación en formato de línea de tiempo horizontal dividida en cuatro etapas claramente marcadas. La línea principal es una flecha gruesa en color azul primario (hexadecimal #1a73b3) que va de izquierda a derecha. Cada etapa tiene un círculo numerado en color dorado (hexadecimal #d4af37) con números 1, 2, 3, 4 dentro. La Etapa 1 (izquierda) muestra un icono de documento legal y texto 'Fundación y Planificación (Meses 1-6)' en tipografía sans-serif blanca sobre fondo azul oscuro. La Etapa 2 muestra un icono de engranaje y texto 'Despliegue Piloto y Ganancias Rápidas (Meses 6-12)' en tipografía similar. La Etapa 3 muestra un icono de red de conexión y texto 'Expansión de Plataforma e Integración (Meses 12-18)'. La Etapa 4 (derecha) muestra un icono de gráfico ascendente y texto 'Optimización y Capacidades Avanzadas (Meses 18-24)'. Alrededor de la línea de tiempo hay cuatro elementos flotantes: en la parte superior izquierda un calendario con fechas clave resaltadas en verde; en la parte superior derecha un gráfico de barras mostrando 'Resultados en 60-90 días'; en la parte inferior izquierda un símbolo de presupuesto con '$50-150M' en tipografía grande; y en la parte inferior derecha un ícono de verificación con texto 'Proyectos completados 35% más rápido'. El fondo es un gradiente suave de gris muy claro (hexadecimal #f3f4f6) a blanco (hexadecimal #ffffff) con líneas de conexión sutiles en azul claro entre los elementos para sugerir progreso secuencial."
+            class="w-full rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300"
+          />
+
+          <div class="space-y-6">
+            <h3 class="text-xl font-semibold text-primary-700 dark:text-primary-300" data-ref="https://ifactoryapp.com/industries/government/smart-city-infrastructure-implementation-roadmap|44">
+              Hoja de Ruta de Implementación
+            </h3>
+            
+            <p class="text-gray-700 dark:text-gray-300">
+              Una hoja de ruta estructurada de implementación de ciudad inteligente se divide en cuatro fases: 1. Fundación y Planificación (Meses 1-6): Establecer estrategia, evaluar infraestructura, construir alineación de partes interesadas y crear un modelo de presupuesto. 2. Despliegue Piloto y Ganancias Rápidas (Meses 6-12): Lanzar implementaciones iniciales en dominios de alto impacto como gestión de tráfico o iluminación de calles. 3. Expansión de Plataforma e Integración (Meses 12-18): Escalar pilotos exitosos a toda la ciudad e integrar fuentes de datos adicionales. 4. Optimización y Capacidades Avanzadas (Meses 18-24): Refinar operaciones, ajustar modelos de IA e introducir nuevos servicios.
+            </p>
+
+            <p class="text-gray-700 dark:text-gray-300" data-ref="https://ifactoryapp.com/industries/government/smart-city-infrastructure-implementation-roadmap|44">
+              El cronograma típico para ver resultados de una iniciativa de ciudad inteligente incluye ganancias rápidas dentro de
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">60-90 días</span>
+              de un lanzamiento piloto (por ejemplo, optimización de tráfico, ahorros energéticos), impacto medible a nivel de ciudad tomando
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">12-18 meses</span>,
+              y una plataforma completamente madura tomando
+              <span class="mx-1 px-1.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 font-semibold text-sm">24-36 meses</span>.
+            </p>
+
+            <div class="pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+              <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://ifactoryapp.com/industries/government/smart-city-infrastructure-implementation-roadmap|44">
+                <i data-lucide="trending-up" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                Inversión y beneficios: Un programa típico de ciudad inteligente municipal tiene un rango de inversión de $50-150M para implementación y los primeros 3 años de operaciones. Estas inversiones se proyectan generar $2-4 en beneficios anuales a través de ahorros de costos y mejoras de eficiencia. Ciudades que siguen un enfoque de implementación por fases completan proyectos 35% más rápido, permanecen dentro del presupuesto 80% del tiempo y logran 60%+ de adopción ciudadana más alta en comparación con enfoques 'todo de una vez'.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hs-accordion-group space-y-4">
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-metricas-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="chart-bar" class="w-6 h-6 text-accent-600 dark:text-accent-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-accent-700 dark:text-accent-300">Métricas de Éxito</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-accent-600 dark:text-accent-400"></i>
+            </button>
+            <div id="hs-metricas-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-metricas-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://ifactoryapp.com/industries/government/smart-city-infrastructure-implementation-roadmap|44">
+                  Las métricas clave de éxito (KPIs) para iniciativas de ciudad inteligente incluyen: reducción promedio del tiempo de desplazamiento (-20%), incidentes de congestión de tráfico por semana (-39%), reducción del consumo energético total (-22%), costos de mantenimiento de iluminación de calles (-50%), tiempo de respuesta de emergencia (seguridad vital) (-29%), puntaje de satisfacción de servicio ciudadano (+31%), reducción de costos operacionales ($18-24M anualmente) y índice de mejora de calidad del aire (de moderado a bueno).
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://deviceauthority.com/smart-city-security-protecting-critical-infrastructure-with-iot/|45">
+                  Las métricas de éxito para programas de seguridad de ciudades inteligentes incluyen medidas cuantitativas como frecuencia de incidentes, tiempo de respuesta y estado de cumplimiento, así como indicadores cualitativos como encuestas de satisfacción ciudadana y análisis de efectividad de costos.
+                </p>
+
+                <div class="grid md:grid-cols-3 gap-4">
+                  <div class="p-4 bg-accent-50/50 dark:bg-accent-900/20 rounded-lg">
+                    <h4 class="font-semibold text-accent-700 dark:text-accent-300 mb-2">Tiempo de Desplazamiento</h4>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">Objetivo: -20%</p>
+                  </div>
+
+                  <div class="p-4 bg-accent-50/50 dark:bg-accent-900/20 rounded-lg">
+                    <h4 class="font-semibold text-accent-700 dark:text-accent-300 mb-2">Congestión de Tráfico</h4>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">Objetivo: -39%</p>
+                  </div>
+
+                  <div class="p-4 bg-accent-50/50 dark:bg-accent-900/20 rounded-lg">
+                    <h4 class="font-semibold text-accent-700 dark:text-accent-300 mb-2">Consumo Energético</h4>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">Objetivo: -22%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-privacidad-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="lock" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-primary-700 dark:text-primary-300">Privacidad y Seguridad</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-primary-600 dark:text-primary-400"></i>
+            </button>
+            <div id="hs-privacidad-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-privacidad-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://ifactoryapp.com/industries/government/smart-city-infrastructure-implementation-roadmap|44">
+                  Para abordar preocupaciones de privacidad ciudadana con monitoreo IoT, el enfoque recomendado es implementar principios de privacidad por diseño, que involucran recolectar datos personales mínimos, anonimizarlo donde sea posible y cumplir con regulaciones como GDPR y CCPA. La transparencia es clave para construir confianza.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://deviceauthority.com/smart-city-security-protecting-critical-infrastructure-with-iot/|45">
+                  Para seguridad en infraestructura de ciudad inteligente, se recomienda una Arquitectura de Confianza Cero para redes IoT. Esto involucra autenticación continua, cifrado en todas partes (datos en tránsito y reposo), microsegmentación para aislar infraestructura crítica y monitoreo continuo 24/7 con procedimientos establecidos de respuesta a incidentes.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://deviceauthority.com/smart-city-security-protecting-critical-infrastructure-with-iot/|45">
+                  Para protección de datos, las ciudades inteligentes deben implementar principios de privacidad por diseño, incluyendo minimización de datos, limitación de propósito, políticas de retención, técnicas de anonimización y privacidad diferencial. Se requiere cifrado tanto en tránsito (para todas las comunicaciones de dispositivo) como en reposo (en bases de datos, sistemas de archivos, en dispositivos).
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-amber-500 bg-amber-50/40 dark:bg-amber-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-amber-900 dark:text-amber-100 leading-relaxed" data-ref="https://www.mordorintelligence.com/industry-reports/global-city-surveillance-market|19">
+                    <i data-lucide="circle-alert" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Amenazas cibernéticas: Las vulnerabilidades de ciberseguridad en cámaras IoT son una restricción, impactando la proyección de CAGR del mercado por -0.8%. El nuevo Acta de Resiliencia Cibernética Europea exige certificación de seguridad por diseño, lo cual extiende ciclos de desarrollo y eleva obstáculos de calificación de proveedores.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-accordion card-interactive bg-white/80 backdrop-blur-sm dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button class="hs-accordion-toggle w-full flex justify-between items-center p-4 text-left hover:bg-primary-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl" id="hs-medellin-heading">
+              <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="map-pin" class="w-6 h-6 text-accent-600 dark:text-accent-400"></i>
+                </div>
+                <span class="font-semibold text-lg text-accent-700 dark:text-accent-300">Caso de Estudio: Medellín</span>
+              </div>
+              <i data-lucide="chevron-down" class="hs-accordion-active:rotate-180 transition-transform duration-300 w-5 h-5 text-accent-600 dark:text-accent-400"></i>
+            </button>
+            <div id="hs-medellin-collapse" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-medellin-heading">
+              <div class="p-6 pt-0 space-y-4">
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://regulations.ai/regulations/RAI-CO-NA-MPFRSXX-2023|39">
+                  El Sistema de Reconocimiento Facial de la Policía de Medellín fue establecido a través de una asociación entre la Alcaldía de Medellín y la Policía Nacional Colombiana. La iniciativa involucra desplegar
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">80 cámaras inteligentes</span>
+                  de reconocimiento facial en toda la ciudad y una aplicación móvil llamada "René" para agentes policiales para realizar verificación de identidad en tiempo real.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://regulations.ai/regulations/RAI-CO-NA-MPFRSXX-2023|39">
+                  Los objetivos principales del sistema son combatir el crimen al identificar individuos con órdenes de arresto activas y prevenir fraude de identidad. Opera dentro del marco nacional de protección de datos de Colombia, específicamente la Ley 1581 de 2012, que clasifica datos biométricos como información sensible personal requiriendo salvaguardas estrictas.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://regulations.ai/regulations/RAI-CO-NA-MPFRSXX-2023|39">
+                  Un componente clave del sistema es la integración de bases de datos, que compara imágenes faciales capturadas contra una base de datos especializada que contiene perfiles de aproximadamente
+                  <span class="mx-1 px-1.5 py-0.5 rounded-md bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-300 font-semibold text-sm">19,000 individuos</span>
+                  que tienen órdenes de arresto actuales. El sistema también aprovecha acceso a bases de datos nacionales más amplias mantenidas por la Registraduría Nacional del Estado Civil para verificación exhaustiva.
+                </p>
+
+                <p class="text-gray-700 dark:text-gray-300" data-ref="https://regulations.ai/regulations/RAI-CO-NA-MPFRSXX-2023|39">
+                  El software de reconocimiento facial que alimenta la red de cámaras fue suministrado por Herta Security, una empresa española. La adquisición de tecnología y comisión de las 80 cámaras ocurrió alrededor de agosto de 2023, con informes de que se volvieron operativas en julio de 2023.
+                </p>
+
+                <div class="pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+                  <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://regulations.ai/regulations/RAI-CO-NA-MPFRSXX-2023|39">
+                    <i data-lucide="info" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+                    Supervisión regulatoria: La operación del sistema está supervisada por la Superintendencia de Industria y Comercio (SIC). Un instrumento regulatorio clave es la Circular Externa 002 de 2024, que proporciona directrices para el procesamiento ético y responsable de datos personales por sistemas de IA, mandando Evaluaciones de Impacto de Protección de Datos (DPIAs) y enfatizando principios como necesidad, razonabilidad y proporcionalidad.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Conclusión Section -->
+    <section id="conclusion" class="py-20 bg-white/80 dark:bg-gray-900" data-aos="fade-up">
+      <div class="max-w-5xl mx-auto px-6">
+        <h2 class="text-3xl font-bold mb-8 text-primary-700 dark:text-primary-300 text-center">
+          Conclusión y Recomendaciones
+        </h2>
+        
+        <div class="space-y-6">
+          <p class="text-gray-700 dark:text-gray-300 text-lg leading-relaxed" data-ref="https://noticias.alas-la.org/las-ciudades-inteligentes-en-latinoamerica-realidad-o-promesa/|12">
+            El desafío central en la construcción de ciudades inteligentes no es solo tecnología sino estrategia y gobernanza. El cuello de botella a menudo es la falta de visión a largo plazo, llevando a proyectos que responden a necesidades a corto plazo en lugar de construir arquitecturas tecnológicas sostenibles enfocadas en interoperabilidad y gobernanza de datos desde el inicio.
+          </p>
+
+          <p class="text-gray-700 dark:text-gray-300 text-lg leading-relaxed" data-ref="https://penniur.upenn.edu/publications/surveillance-or-safety-how-cities-are-rewriting-tourism|18">
+            Existe una tensión creciente entre seguridad y privacidad a medida que las ciudades se vuelven más "inteligentes". Sin marcos claros para uso de datos, transparencia y control, el riesgo es moverse de "ciudades seguras" a "ciudades sobre vigiladas".
+          </p>
+
+          <div class="grid md:grid-cols-2 gap-6 mt-8">
+            <div class="card-interactive p-6 bg-primary-50/50 dark:bg-gray-800 rounded-xl shadow-md">
+              <div class="flex items-center space-x-4 mb-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="thumbs-up" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-primary-700 dark:text-primary-300">Recomendaciones Clave</h3>
+              </div>
+              <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                <li class="flex items-start">
+                  <i data-lucide="check" class="w-4 h-4 mr-2 mt-1 text-primary-600 dark:text-primary-400 flex-shrink-0"></i>
+                  <span>Implementar arquitecturas modulares y escalables basadas en estándares abiertos</span>
+                </li>
+                <li class="flex items-start">
+                  <i data-lucide="check" class="w-4 h-4 mr-2 mt-1 text-primary-600 dark:text-primary-400 flex-shrink-0"></i>
+                  <span>Garantizar cumplimiento total con Ley 1581 de 2012 y jurisprudencia constitucional</span>
+                </li>
+                <li class="flex items-start">
+                  <i data-lucide="check" class="w-4 h-4 mr-2 mt-1 text-primary-600 dark:text-primary-400 flex-shrink-0"></i>
+                  <span>Establecer marcos de gobernanza de datos con transparencia y control ciudadano</span>
+                </li>
+                <li class="flex items-start">
+                  <i data-lucide="check" class="w-4 h-4 mr-2 mt-1 text-primary-600 dark:text-primary-400 flex-shrink-0"></i>
+                  <span>Adoptar enfoques de implementación por fases con métricas de éxito claras</span>
+                </li>
+                <li class="flex items-start">
+                  <i data-lucide="check" class="w-4 h-4 mr-2 mt-1 text-primary-600 dark:text-primary-400 flex-shrink-0"></i>
+                  <span>Integrar análisis de retorno social de inversión (SROI) en evaluación de proyectos</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card-interactive p-6 bg-accent-50/50 dark:bg-gray-800 rounded-xl shadow-md">
+              <div class="flex items-center space-x-4 mb-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                  <i data-lucide="target" class="w-6 h-6 text-accent-600 dark:text-accent-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-accent-700 dark:text-accent-300">Objetivos Estratégicos</h3>
+              </div>
+              <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                <li class="flex items-start">
+                  <i data-lucide="arrow-right" class="w-4 h-4 mr-2 mt-1 text-accent-600 dark:text-accent-400 flex-shrink-0"></i>
+                  <span>Reducir tiempos de respuesta de emergencia en al menos 30%</span>
+                </li>
+                <li class="flex items-start">
+                  <i data-lucide="arrow-right" class="w-4 h-4 mr-2 mt-1 text-accent-600 dark:text-accent-400 flex-shrink-0"></i>
+                  <span>Mejorar percepción de seguridad ciudadana en 40%</span>
+                </li>
+                <li class="flex items-start">
+                  <i data-lucide="arrow-right" class="w-4 h-4 mr-2 mt-1 text-accent-600 dark:text-accent-400 flex-shrink-0"></i>
+                  <span>Aumentar ingresos turísticos en 25% a través de mejor seguridad percibida</span>
+                </li>
+                <li class="flex items-start">
+                  <i data-lucide="arrow-right" class="w-4 h-4 mr-2 mt-1 text-accent-600 dark:text-accent-400 flex-shrink-0"></i>
+                  <span>Lograr cumplimiento regulatorio 100% con protección de datos</span>
+                </li>
+                <li class="flex items-start">
+                  <i data-lucide="arrow-right" class="w-4 h-4 mr-2 mt-1 text-accent-600 dark:text-accent-400 flex-shrink-0"></i>
+                  <span>Generar SROI de al menos 2.5:1 en inversión total</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-12 pl-4 pr-3 py-3 border-l-4 border-primary-500 bg-primary-50/40 dark:bg-primary-900/30 rounded-r-lg">
+            <p class="text-sm font-medium text-primary-900 dark:text-primary-100 leading-relaxed" data-ref="https://penniur.upenn.edu/publications/surveillance-or-safety-how-cities-are-rewriting-tourism|18">
+              <i data-lucide="lightbulb" class="inline-block w-4 h-4 mr-1.5 -mt-0.5"></i>
+              Visión final: El concepto de "Ciudad Inclusiva" propone que los derechos digitales y de privacidad otorgados a residentes permanentes también deberían concederse a visitantes temporales, como turistas. Este principio busca construir confianza con la comunidad internacional al garantizar trato e igualdad y respeto por derechos individuales, independientemente del estatus de residencia.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-primary-900 dark:bg-gray-950 text-gray-300 py-12">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-8">
+        <div>
+          <h3 class="text-lg font-semibold text-primary-300 dark:text-primary-400 mb-4">Sobre esta Investigación</h3>
+          <p class="text-sm text-gray-400">
+            Documento ejecutivo integral sobre sistemas de Escudo Digital con enfoque en tecnología de punta, viabilidad operativa, cumplimiento normativo y retorno social para toma de decisiones municipales.
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-primary-300 dark:text-primary-400 mb-4">Áreas de Enfoque</h3>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li>• Arquitectura Tecnológica</li>
+            <li>• Rendimiento y Latencia</li>
+            <li>• Marco Normativo</li>
+            <li>• Análisis Económico</li>
+            <li>• Impacto Socioeconómico</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-primary-300 dark:text-primary-400 mb-4">Recursos</h3>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li>• Ley 1581 de 2012</li>
+            <li>• Jurisprudencia Constitucional</li>
+            <li>• Casos de Éxito Latinoamericanos</li>
+            <li>• Estudios de Mercado</li>
+            <li>• Análisis de Costos</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-500">
+        <p>&copy; 2025 Sistema de Escudo Digital - Investigación Integral. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Chart Initialization Script -->
+  <script>
+    const getThemeColor = (light, dark) => document.body.classList.contains('dark') ? dark : light;
+    let charts = {};
+    
+    const getColors = () => ({
+      primary: getThemeColor('#1a73b3', '#60a5fa'),
+      accent: getThemeColor('#6366f1', '#818cf8'),
+      text: getThemeColor('#1f2937', '#e5e7eb'),
+      grid: getThemeColor('#e5e7eb', '#374151')
+    });
+    
+    const updateCharts = () => {
+      const { text, grid } = getColors();
+      
+      Object.values(charts).forEach(chart => {
+        if (chart?.options) {
+          if (chart.options.plugins?.legend?.labels) chart.options.plugins.legend.labels.color = text;
+          if (chart.options.plugins?.title) chart.options.plugins.title.color = text;
+          if (chart.options.scales) {
+            Object.values(chart.options.scales).forEach(scale => {
+              if (scale.ticks) scale.ticks.color = text;
+              if (scale.grid) scale.grid.color = grid;
+              if (scale.pointLabels) scale.pointLabels.color = text;
+              if (scale.title) scale.title.color = text;
+            });
+          }
+          chart.update('none');
+        }
+      });
+    };
+
+    // Latency Comparison Data - Direct quotes from references
+    const latencyData = {
+      labels: ['RTSP', 'WebRTC', 'IP CCTV', 'JPEG WebSocket', 'RTMP', 'HLS'],
+      datasets: [{
+        label: 'Latencia (milisegundos)',
+        data: [1500, 500, 150, 2000, 1250, 3500], // Direct quotes from https://www.datapath.co.uk/what-latency-should-i-expect-from-an-ip-based-cctv-control-room/|37, https://www.researchgate.net/publication/399909840_A_Modular_and_Secure_Face_Recognition_Pipeline_with_Real-Time_WebRTC_Streaming|28, https://www.facebook.com/groups/ComputerVisionGroup/posts/3311682235642621/|24, https://www.mdpi.com/2073-431X/15/1/62|35
+        backgroundColor: ['#1a73b3', '#6366f1', '#0ea5e9', '#f59e0b', '#ef4444', '#10b981']
+      }]
+    };
+
+    // Cost Structure Data - Direct quote from https://newsroom.axis.com/blog/video-surveillance-value|20
+    const costData = {
+      labels: ['Inversión Inicial', 'Instalación/Mantenimiento'],
+      datasets: [{
+        label: 'Porcentaje del Costo Total',
+        data: [34, 66], // Direct quote from https://newsroom.axis.com/blog/video-surveillance-value|20
+        backgroundColor: ['#1a73b3', '#6366f1']
+      }]
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      lucide.createIcons();
+      AOS.init({ duration: 800, once: true });
+      
+      initCitationSystem();
+      
+      const { primary, accent, text, grid } = getColors();
+
+      const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: text } } }
+      };
+
+      if (document.getElementById('latencyChart')) {
+        charts.latency = new Chart(document.getElementById('latencyChart'), {
+          type: 'bar',
+          data: latencyData,
+          options: {
+            ...commonOptions,
+            scales: {
+              x: { ticks: { color: text }, grid: { color: grid } },
+              y: { beginAtZero: true, ticks: { color: text }, grid: { color: grid }, title: { display: true, text: 'Milisegundos', color: text } }
+            }
+          }
+        });
+      }
+
+      if (document.getElementById('costChart')) {
+        charts.cost = new Chart(document.getElementById('costChart'), {
+          type: 'pie',
+          data: costData,
+          options: {
+            ...commonOptions,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: text } },
+              title: { display: true, text: 'Costo Total de Propiedad (TCO)', color: text }
+            }
+          }
+        });
+      }
+      
+      updateCharts();
+      
+      document.addEventListener('themeChange', updateCharts);
+      
+      const progressBar = document.getElementById('progressBar');
+      const updateProgress = () => {
+        const scrollTop = window.pageYOffset;
+        const docHeight = document.body.scrollHeight - window.innerHeight;
+        const scrollPercent = (scrollTop / docHeight) * 100;
+        progressBar.style.width = scrollPercent + '%';
+      };
+      
+      window.addEventListener('scroll', updateProgress);
+      updateProgress();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        setTimeout(updateCharts, 50);
+      }
+    });
+  </script>
+</body>
+</html>
